@@ -1,22 +1,9 @@
 class ApplicationController < ActionController::API
-  before_action :snake_case_params
+  include ActionController::RequestForgeryProtection
 
+  protect_from_forgery with: :exception
 
-#   def test
-#     if params.has_key?(:login)
-#       login!(User.first)
-#     elsif params.has_key?(:logout)
-#       logout!
-#     end
-  
-#     if current_user
-#       render json: { user: current_user.slice('id', 'username', 'session_token') }
-#     else
-#       render json: ['No current user']
-#     end
-#   end
-
-
+  before_action :snake_case_params, :attach_authenticity_token
 
 
   def current_user
@@ -35,7 +22,7 @@ class ApplicationController < ActionController::API
 
   def require_logged_in
     unless current_user
-      render json: { message: 'Unauthorized' }, status: :unauthorized 
+      render json: { message: "Unauthorized" }, status: :unauthorized
     end
   end
 
@@ -44,4 +31,23 @@ class ApplicationController < ActionController::API
   def snake_case_params
     params.deep_transform_keys!(&:underscore)
   end
+
+  def attach_authenticity_token
+    headers['X-CSRF-Token'] = masked_authenticity_token(session)
+  end
+
+  #   def test
+  #     if params.has_key?(:login)
+  #       login!(User.first)
+  #     elsif params.has_key?(:logout)
+  #       logout!
+  #     end
+
+  #     if current_user
+  #       render json: { user: current_user.slice('id', 'username', 'session_token') }
+  #     else
+  #       render json: ['No current user']
+  #     end
+  #   end
+
 end
