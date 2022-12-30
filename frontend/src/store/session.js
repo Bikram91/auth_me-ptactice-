@@ -10,11 +10,17 @@ const setCurrentUser = (user) => {
   };
 };
 
-const removeCurrentUser = () => {
+export const removeCurrentUser = () => {
   return {
     type: REMOVE_CURRENT_USER
   };
 };
+
+// export const logout = async user => (
+//         csrfFetch("api/session", {
+//             method: "DELETE"
+//         })
+// )
 
 const storeCSRFToken = response => {
     const csrfToken = response.headers.get("X-CSRF-Token");
@@ -26,6 +32,22 @@ const storeCurrentUser = user => {
     else sessionStorage.removeItem("currentUser");
   }
 
+export const signup = (user) => async (dispatch) => {
+    const {username, email, password} = user;
+    const response = await csrfFetch('/api/users', {
+        method: 'POST',
+        body: JSON.stringify({
+            username,
+            email,
+            password
+          })
+    });
+    const data = await response.json();
+    storeCurrentUser(data.user);
+    dispatch(setCurrentUser(data.user));
+    return response;
+};
+
 export const login = (user) => async (dispatch) => {
   const { credential, password } = user;
   const response = await csrfFetch('/api/session', {
@@ -36,10 +58,25 @@ export const login = (user) => async (dispatch) => {
     })
   });
   const data = await response.json();
-  storeCurrentUser(data.user)
+    storeCurrentUser(data.user)
   dispatch(setCurrentUser(data.user));
   return response;
 };
+
+// export const logoutUser = user => async dispatch => {
+//         let res = await logout();
+//         // error handling if above request fails
+//         dispatch(removeUser(user.id));
+//       };
+
+export const logout = () => async (dispatch) => {
+    const response = await csrfFetch("/api/session", {
+      method: "DELETE"
+    });
+    storeCurrentUser(null);
+    dispatch(removeCurrentUser());
+    return response;
+  };
 
 export const restoreSession = () => async dispatch => {
     const response = await csrfFetch("/api/session");
@@ -53,7 +90,9 @@ export const restoreSession = () => async dispatch => {
   const initialState = { 
     user: JSON.parse(sessionStorage.getItem("currentUser"))
   };
-  
+//   const initialState = {
+//     user: null
+//   }
 
 const sessionReducer = (state = initialState, action) => {
   switch (action.type) {

@@ -9,6 +9,7 @@ import csrfFetch, { restoreCSRF } from './store/csrf';
 import * as sessionActions from "./store/session";
 
 
+
 const store = configureStore();
 
 
@@ -17,6 +18,8 @@ if (process.env.NODE_ENV !== 'production') {
   window.csrfFetch = csrfFetch;
   window.sessionActions = sessionActions;
 }
+
+
 
 function Root() {
   return (
@@ -37,12 +40,29 @@ const renderApplication = () => {
   );
 }
 
-if (sessionStorage.getItem("currentUser") === null ||
-    sessionStorage.getItem("X-CSRF-Token") === null
-   ) {
-    store.dispatch(sessionActions.restoreSession()).then(renderApplication);
+// if (sessionStorage.getItem("X-CSRF-Token") === null) {
+//   restoreCSRF().then(renderApplication);
+// } else {
+//   renderApplication();
+// }
+
+if (
+  sessionStorage.getItem("currentUser") === null ||
+  sessionStorage.getItem("X-CSRF-Token") === null 
+) {
+  store.dispatch(sessionActions.restoreSession()).then(renderApplication);
 } else {
   renderApplication();
 }
+
+// import {csrfFetch} from "../store/csrf"
+
+// // Action Type
+// const LOGIN_USER = "users/lOGIN_USER"
+// const LOGOUT_USER = "users/LOGOUT_USER"
+// // Action Creators
+// export const receiveUser = user => ({
+//     type: LOGIN_USER,
+//     payload: user
 
 
